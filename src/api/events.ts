@@ -26,7 +26,7 @@ export const fetchEvents = async (
   page: number = 1,
   pageSize: number = 25,
   fields?: string,
-  populate: string = '*',
+  populate: string = "*",
   filters?: object,
   locale?: string
 ): Promise<EventsResponse> => {
@@ -63,7 +63,7 @@ export const fetchEvents = async (
 
 export const fetchEvent = async (id: number): Promise<EventResponse> => {
   try {
-    const response = await axios.get<EventResponse>(`${API_URL}/events/${id}`, {
+    const response = await axios.get<EventResponse>(`${API_URL}/events/${id}?populate=*`, {
       headers: {
         Authorization: `Bearer ${API_KEY}`,
       },

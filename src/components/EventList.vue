@@ -38,16 +38,16 @@
           <el-card class="event-card" :body-style="{ padding: '20px' }">
             <h3>{{ event.attributes.name }}</h3>
             <p>
-              <strong>Datum:</strong>
+              <el-icon><Calendar /></el-icon>
               {{ formatEventDate(event.attributes.eventstart) }}
             </p>
             <p>
-              <strong>Ort:</strong>
+              <el-icon><Location /></el-icon>
               {{ event.attributes.location.data.attributes.name }}
             </p>
-            <el-button type="primary" @click="openEvent(event)"
-              >Details</el-button
-            >
+            <router-link :to="'/event/' + event.id">
+              <el-button type="primary">Details</el-button>
+            </router-link>
           </el-card>
         </el-col>
       </el-row>
@@ -61,10 +61,12 @@ import { defineComponent, ref, onMounted } from "vue";
 import { fetchEvents } from "../api/events";
 import { Event } from "../types/Event";
 import SearchBar from "@/components/SearchBar.vue";
+import { ElIcon } from "element-plus";
+import { Calendar, Location } from "@element-plus/icons-vue";
 
 export default defineComponent({
   name: "EventList",
-  components: { SearchBar },
+  components: { SearchBar, ElIcon, Calendar, Location },
   setup() {
     const events = ref<Event[]>([]);
     const displayedEvents = ref<Event[]>([]);
@@ -102,11 +104,17 @@ export default defineComponent({
           page.value,
           pageSize.value
         );
-        const sortedEvents = response.data.sort(
-          (a: Event, b: Event) =>
-            new Date(a.attributes.eventstart).getTime() -
-            new Date(b.attributes.eventstart).getTime()
-        );
+        const currentDate = new Date();
+        const sortedEvents = response.data
+          .filter(
+            (event: Event) =>
+              new Date(event.attributes.eventstart) >= currentDate
+          )
+          .sort(
+            (a: Event, b: Event) =>
+              new Date(a.attributes.eventstart).getTime() -
+              new Date(b.attributes.eventstart).getTime()
+          );
         events.value.push(...sortedEvents);
         displayedEvents.value = events.value;
         page.value += 1;
@@ -139,7 +147,7 @@ export default defineComponent({
       });
     };
 
-    const formatEventDate = (dateString: string) => {
+    const formatEventDate = (dateString: any) => {
       const eventDate = new Date(dateString);
       const today = new Date();
       const tomorrow = new Date();
@@ -156,10 +164,6 @@ export default defineComponent({
       }
 
       return formattedDate;
-    };
-
-    const openEvent = (event: Event) => {
-      // Open event details logic
     };
 
     return {
@@ -190,5 +194,11 @@ export default defineComponent({
 
 .filter-container > * {
   flex: 1;
+}
+
+p {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 </style>

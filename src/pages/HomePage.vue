@@ -5,21 +5,29 @@
       <template #date-cell="{ data }">
         <div
           :class="{ 'is-selected': data.isSelected }"
-          @dblclick="handleDateCellDblClick(data.day)"
-          @click="handleDayClick(data.day)"
+          @dblclick="handleDateCellDblClick(data.day, $event)"
+          @click="handleDayClick(data.day, $event)"
         >
           <p>{{ data.day.split("-").slice(2).join("-") }}</p>
-          <el-tooltip
-            v-for="event in getEventsForDay(data.day)"
-            :key="event.id"
-            :content="event.attributes.name"
-            placement="bottom"
-            effect="light"
-          >
-            <el-tag type="primary">
-              {{ truncateTitle(event.attributes.name, 15) }}
+          <div v-if="getEventsForDay(data.day).length > 0">
+            <el-tooltip
+              v-if="getEventsForDay(data.day).length === 1"
+              :content="getEventsForDay(data.day)[0].attributes.name"
+              placement="bottom"
+            >
+              <el-tag type="primary">
+                {{
+                  truncateTitle(
+                    getEventsForDay(data.day)[0].attributes.name,
+                    15
+                  )
+                }}
+              </el-tag>
+            </el-tooltip>
+            <el-tag v-else type="primary">
+              {{ getEventsForDay(data.day).length }} Events
             </el-tag>
-          </el-tooltip>
+          </div>
         </div>
       </template>
     </el-calendar>
@@ -47,6 +55,7 @@ const error = ref<string | null>(null);
 const drawerVisible = ref(false);
 const selectedDay = ref<string | null>(null);
 const router = useRouter();
+let clickTimeout: number | undefined;
 
 onMounted(async () => {
   try {
@@ -79,18 +88,31 @@ const eventsForSelectedDay = computed(() => {
   return selectedDay.value ? getEventsForDay(selectedDay.value) : [];
 });
 
-const handleDateCellDblClick = (day: string) => {
+const handleDateCellDblClick = (day: string, event: MouseEvent) => {
+  event.stopPropagation();
+  clearTimeout(clickTimeout);
+  clickTimeout = undefined;
   const date = new Date(day);
   date.setHours(20, 0, 0);
-  router.push({
-    path: "/create",
-    query: { startDate: date.toISOString() },
-  });
+  router
+    .push({
+      path: "create",
+      query: { startDate: date.toISOString() },
+    })
+    .catch((err) => console.error(err));
 };
 
-const handleDayClick = (day: string) => {
-  selectedDay.value = day;
-  drawerVisible.value = true;
+const handleDayClick = (day: string, event: MouseEvent) => {
+  if (clickTimeout !== undefined) {
+    clearTimeout(clickTimeout);
+    clickTimeout = undefined;
+    return;
+  }
+  clickTimeout = window.setTimeout(() => {
+    selectedDay.value = day;
+    drawerVisible.value = true;
+    clickTimeout = undefined;
+  }, 200);
 };
 
 const truncateTitle = (title: string, length: number) => {
