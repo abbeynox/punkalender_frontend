@@ -48,7 +48,13 @@
         {{ event?.attributes.location.data.attributes.name }}
       </h3>
       <p>
-        <i inline-flex i="ep-ticket" /> {{ event?.attributes.ticket?.type }}
+        <i inline-flex i="ep-ticket" />
+        <span v-if="event?.attributes.ticket?.type === 'Eintrittspreis'">
+          {{ formatPrice(event?.attributes.ticket?.chf) }} CHF
+        </span>
+        <span v-else>
+          {{ event?.attributes.ticket?.type }}
+        </span>
       </p>
       <a
         v-if="event?.attributes.ticket?.ticketlink"
@@ -92,7 +98,6 @@ const loadEvent = async (id: number) => {
     event.value = response.data;
     document.title = response.data.attributes.name;
     startCountdown(new Date(response.data.attributes.eventstart));
-    console.log(response.data);
   } catch (error) {
     console.error("Error loading event:", error);
   }
@@ -107,6 +112,10 @@ const formatDateTime = (timestamp: any) => {
     year: "numeric",
   };
   return date.toLocaleDateString("de-DE", options);
+};
+
+const formatPrice = (price: number) => {
+  return price.toFixed(2);
 };
 
 const startCountdown = (eventStart: Date) => {

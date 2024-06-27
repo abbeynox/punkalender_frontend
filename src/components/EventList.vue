@@ -46,7 +46,7 @@
               {{ event.attributes.location.data.attributes.name }}
             </p>
             <router-link :to="'/event/' + event.id">
-              <el-button type="primary">Details</el-button>
+              <el-button plain>Details</el-button>
             </router-link>
           </el-card>
         </el-col>

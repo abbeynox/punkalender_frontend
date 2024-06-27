@@ -275,16 +275,12 @@ const submitForm = async (formEl: FormInstance | undefined) => {
             ticket: ruleForm.ticket,
           },
         };
-
-        console.log(payload);
-
         const response = await createEvent(payload);
         ElMessage({
           showClose: true,
           message: "Event erfolgreich erstellt!",
           type: "success",
         });
-        console.log("Event created:", response);
         resetForm(formEl);
       } catch (error) {
         ElMessage({

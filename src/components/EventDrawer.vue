@@ -45,6 +45,9 @@
               band.attributes.bandname + "\n"
             }}</span>
           </p>
+          <router-link :to="'/event/' + event.id">
+            <el-button plain>Details</el-button>
+          </router-link>
         </div>
       </el-card>
     </div>
