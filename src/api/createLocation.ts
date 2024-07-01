@@ -2,7 +2,6 @@ import axios, { AxiosError } from "axios";
 import { Location } from "../types/Location";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const API_KEY = import.meta.env.VITE_API_KEY;
 
 export interface CreateLocationPayload {
   data: {
@@ -27,10 +26,16 @@ export interface CreateLocationPayload {
 export const createLocation = async (
   payload: CreateLocationPayload
 ): Promise<Location> => {
+  const jwt = localStorage.getItem("jwt");
+
+  if (!jwt) {
+    throw new Error("JWT token not found. Please login again.");
+  }
+
   try {
     const response = await axios.post(`${API_URL}/locations`, payload, {
       headers: {
-        Authorization: `Bearer ${API_KEY}`,
+        Authorization: `Bearer ${jwt}`,
       },
     });
     return response.data;

@@ -2,7 +2,6 @@ import axios, { AxiosError } from "axios";
 import { Event } from "../types/Event";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const API_KEY = import.meta.env.VITE_API_KEY;
 
 export interface CreateEventPayload {
   data: {
@@ -32,10 +31,16 @@ export interface CreateEventPayload {
 export const createEvent = async (
   payload: CreateEventPayload
 ): Promise<Event> => {
+  const jwt = localStorage.getItem("jwt");
+
+  if (!jwt) {
+    throw new Error("JWT token not found. Please login again.");
+  }
+
   try {
     const response = await axios.post(`${API_URL}/events`, payload, {
       headers: {
-        Authorization: `Bearer ${API_KEY}`,
+        Authorization: `Bearer ${jwt}`,
       },
     });
     return response.data;
