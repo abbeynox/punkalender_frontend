@@ -25,14 +25,14 @@
         </template>
         <div style="text-align: left">
           <p>
-            <strong>Startzeitpunkt:</strong>
+            <strong>Beginn:</strong>
             {{ formatDateTime(event.attributes.eventstart) }}
             <el-tag type="primary" effect="plain" round>{{
               timeUntil(event.attributes.eventstart)
             }}</el-tag>
           </p>
           <p v-if="event.attributes.eventend">
-            <strong>Endzeit:</strong>
+            <strong>Ende:</strong>
             {{ formatDateTime(event.attributes.eventend) }}
           </p>
           <p>

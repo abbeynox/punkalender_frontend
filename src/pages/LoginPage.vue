@@ -1,6 +1,6 @@
 <template>
-  <h1>Login</h1>
   <div :class="['form-container', { 'swipe-up': loginSuccess }]">
+    <h1>Login</h1>
     <el-form
       ref="loginFormRef"
       :model="loginForm"

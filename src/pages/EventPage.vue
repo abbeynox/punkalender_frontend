@@ -51,16 +51,19 @@
         <i inline-flex i="ep-ticket" />
         <span v-if="event?.attributes.ticket?.type === 'Eintrittspreis'">
           {{ formatPrice(event?.attributes.ticket?.chf) }} CHF
+          <el-link
+            v-if="event?.attributes.ticket?.ticketlink"
+            :href="event?.attributes.ticket?.ticketlink"
+            target="_blank"
+            style="margin-left: 5px;"
+            ><i inline-flex i="ep-shopping-trolley" style="margin-right:2px;"/> kaufen</el-link
+          >
         </span>
         <span v-else>
           {{ event?.attributes.ticket?.type }}
         </span>
       </p>
-      <a
-        v-if="event?.attributes.ticket?.ticketlink"
-        :href="event?.attributes.ticket?.ticketlink"
-        >Ticketwebsite</a
-      >
+
       <div class="share">
         <el-button plain @click="downloadICS">
           <el-icon><Calendar /></el-icon>
