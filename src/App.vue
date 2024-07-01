@@ -4,6 +4,7 @@
     <div class="flex main-container">
       <router-view />
     </div>
+    <BaseFooter />
   </el-config-provider>
 </template>
 
