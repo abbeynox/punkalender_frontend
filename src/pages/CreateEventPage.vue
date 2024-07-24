@@ -156,6 +156,40 @@
           >Hinzufügen</el-button
         >
       </el-form-item>
+
+      <el-form-item label="Ticket Typ" prop="ticket.type">
+        <el-segmented
+          v-model="ruleForm.ticket.type"
+          :options="ticketTypeOptions"
+          @change="handleTicketTypeChange"
+          style="width: 100%"
+        />
+      </el-form-item>
+      <el-form-item
+        v-if="ruleForm.ticket.type !== 'Kostenlos'"
+        label="Ticket Link"
+        prop="ticket.ticketlink"
+      >
+        <el-input v-model="ruleForm.ticket.ticketlink" style="width: 100%" />
+      </el-form-item>
+      <el-form-item
+        v-if="ruleForm.ticket.type !== 'Kostenlos'"
+        :label="
+          ruleForm.ticket.type === 'Kollekte'
+            ? 'Richtpreis (CHF)'
+            : 'Eintrittspreis (CHF)'
+        "
+        prop="ticket.chf"
+      >
+        <el-input-number
+          v-model="ruleForm.ticket.chf"
+          :min="1"
+          :max="999"
+          :precision="2"
+          style="width: 100%"
+        />
+      </el-form-item>
+
       <el-form-item>
         <el-button
           style="width: 100%"
@@ -388,7 +422,6 @@ const saveNewBand = async () => {
     bands.value.push(bandData);
     ruleForm.bands.push(newBand.data.id);
     isNewBand.value = false;
-    resetNewBandData();
     ElMessage({
       showClose: true,
       message: "Band gespeichert und ausgewählt!",
