@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     BandList: typeof import('./components/BandList.vue')['default']
+    BandStep: typeof import('./components/Steps/BandStep.vue')['default']
     BaseFooter: typeof import('./components/layouts/BaseFooter.vue')['default']
     BaseHeader: typeof import('./components/layouts/BaseHeader.vue')['default']
     BaseSide: typeof import('./components/layouts/BaseSide.vue')['default']
@@ -55,6 +56,7 @@ declare module 'vue' {
     EventDrawer: typeof import('./components/EventDrawer.vue')['default']
     EventList: typeof import('./components/EventList.vue')['default']
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
+    LocationStep: typeof import('./components/Steps/LocationStep.vue')['default']
     Logos: typeof import('./components/Logos.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

@@ -1,42 +1,84 @@
-# element-plus-vite-starter
+# Punkalender
 
-> A starter kit for Element Plus with Vite
+This project is a Punk Event Calendar! This web application allows you to view and manage various punk events in Switzerland. You can explore upcoming events, view details, and create new events. The project is built using **Vue 3**, **Vite**, and **Element Plus**.
 
-- Preview: <https://vite-starter.element-plus.org>
+## Table of Contents
+- [Installation](#installation)
+- [Usage](#usage)
+- [Features](#features)
+- [Scripts](#scripts)
+- [Dependencies](#dependencies)
+- [Development](#development)
 
-This is an example of on-demand element-plus with [unplugin-vue-components](https://github.com/antfu/unplugin-vue-components).
+## Installation
 
-> If you want to import all, it may be so simple that no examples are needed. Just follow [quickstart | Docs](https://element-plus.org/zh-CN/guide/quickstart.html) and import them.
-
-If you just want an on-demand import example `manually`, you can check [unplugin-element-plus/examples/vite](https://github.com/element-plus/unplugin-element-plus/tree/main/examples/vite).
-
-## Project setup
+To get started, clone the repository and install the dependencies:
 
 ```bash
+git clone https://github.com/yourusername/punk-event-calendar.git
+cd punk-event-calendar
 npm install
 ```
 
-### Compiles and hot-reloads for development
+## Usage
+### Development Server
+
+To start the development server, run:
 
 ```bash
 npm run dev
 ```
 
-### Compiles and minifies for production
+This will start the Vite development server. Open your browser and navigate to http://localhost:5173 to see the application in action.
+
+### Build for Production
+
+To build the application for production, run:
 
 ```bash
 npm run build
 ```
 
-## Usage
+The built files will be output to the dist directory.
+
+### Preview Production Build
+
+To preview the production build, run:
 
 ```bash
-git clone https://github.com/element-plus/element-plus-vite-starter
-cd element-plus-vite-starter
-npm i
-npm run dev
+npm run preview
 ```
 
-### Custom theme
+## Features
 
-See `src/styles/element/index.scss`.
+- Event List: View a list of upcoming punk events.
+- Event Details: Click on an event to view more details.
+- Create Event: Add a new event to the calendar.
+
+## Scripts
+
+Here are the scripts available in this project:
+
+- `npm run dev`: Starts the development server.
+- `npm run build`: Builds the application for production.
+- `npm run preview`: Previews the production build.
+- `npm run lint`: Lints the codebase using ESLint.
+
+## Dependencies
+
+- **Vue 3**: JavaScript framework for building user interfaces.
+- **Vite**: Next generation front-end tooling.
+- **Element Plus**: A Vue 3 based component library.
+
+## Development
+
+To contribute to this project, follow these steps:
+
+- Fork the repository.
+- Create a new branch (git checkout -b feature/your-feature-name).
+- Make your changes.
+- Commit your changes (git commit -m 'Add some feature').
+- Push to the branch (git push origin feature/your-feature-name).
+- Open a Pull Request.
+
+Please ensure your code adheres to the project's coding standards and passes all tests.

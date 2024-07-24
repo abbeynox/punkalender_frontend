@@ -12,7 +12,6 @@
       status-icon
       style="width: 100%"
     >
-      <!-- Form Items -->
       <el-form-item label="Name" prop="name">
         <el-input
           v-model="ruleForm.name"
@@ -62,65 +61,101 @@
           v-model="ruleForm.bands"
           multiple
           filterable
+          allow-create
+          default-first-option
           placeholder="Wähle Bands aus"
           style="width: 100%"
+          @change="handleBandSelectChange"
         >
           <el-option
             v-for="band in bands"
             :key="band.id"
-            :label="band.attributes.bandname"
+            :label="band.attributes ? band.attributes.bandname : band.bandname"
             :value="band.id"
           />
         </el-select>
+      </el-form-item>
+      <el-form-item v-if="isNewBand" label="Neue Band">
+        <el-input
+          v-model="newBandData.bandname"
+          placeholder="Name der neuen Band"
+          style="width: 100%"
+        />
+        <el-input
+          v-model="newBandData.country"
+          placeholder="Herkunftsland"
+          style="width: 100%"
+        />
+        <el-input
+          v-model="newBandData.description"
+          placeholder="Beschreibung"
+          type="textarea"
+          style="width: 100%"
+        />
+        <el-button type="primary" @click="saveNewBand" :icon="Plus"
+          >Hinzufügen</el-button
+        >
       </el-form-item>
       <el-form-item label="Ort" prop="location">
         <el-select
           v-model="ruleForm.location"
           filterable
+          allow-create
+          default-first-option
           placeholder="Wähle einen Ort aus"
           style="width: 100%"
+          @change="handleLocationSelectChange"
         >
           <el-option
             v-for="location in locations"
             :key="location.id"
-            :label="location.attributes.name"
+            :label="
+              location.attributes ? location.attributes.name : location.name
+            "
             :value="location.id"
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="Ticket Typ" prop="ticket.type">
-        <el-segmented
-          v-model="ruleForm.ticket.type"
-          :options="ticketTypeOptions"
-          @change="handleTicketTypeChange"
+      <el-form-item v-if="isNewLocation" label="Neuer Ort">
+        <el-input
+          v-model="newLocationData.name"
+          placeholder="Name des neuen Ortes"
           style="width: 100%"
         />
-      </el-form-item>
-      <el-form-item
-        v-if="ruleForm.ticket.type !== 'Kostenlos'"
-        label="Ticket Link"
-        prop="ticket.ticketlink"
-      >
-        <el-input v-model="ruleForm.ticket.ticketlink" style="width: 100%" />
-      </el-form-item>
-      <el-form-item
-        v-if="ruleForm.ticket.type !== 'Kostenlos'"
-        :label="
-          ruleForm.ticket.type === 'Kollekte'
-            ? 'Richtpreis (CHF)'
-            : 'Eintrittspreis (CHF)'
-        "
-        prop="ticket.chf"
-      >
-        <el-input-number
-          v-model="ruleForm.ticket.chf"
-          :min="1"
-          :max="999"
-          :precision="2"
+        <el-input
+          v-model="newLocationData.description"
+          placeholder="Beschreibung"
+          type="textarea"
           style="width: 100%"
         />
+        <el-input
+          v-model="newLocationData.street"
+          placeholder="Strasse"
+          style="width: 100%"
+        />
+        <el-input
+          v-model="newLocationData.plz"
+          placeholder="PLZ"
+          type="number"
+          style="width: 100%"
+        />
+        <el-input
+          v-model="newLocationData.city"
+          placeholder="Stadt"
+          style="width: 100%"
+        />
+        <el-checkbox v-model="newLocationData.dogsAllowed"
+          >Hunde erlaubt</el-checkbox
+        >
+        <el-input
+          v-model="newLocationData.email"
+          placeholder="Email"
+          style="width: 100%"
+        />
+        <el-button type="primary" @click="saveNewLocation" :icon="Plus"
+          >Hinzufügen</el-button
+        >
       </el-form-item>
-
       <el-form-item>
         <el-button
           style="width: 100%"
@@ -138,11 +173,14 @@ import { reactive, ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { createEvent, CreateEventPayload } from "../api/createEvent";
 import { fetchBands } from "../api/bands";
+import { createBand } from "~/api/createBand";
 import { fetchLocations } from "../api/locations";
+import { createLocation } from "~/api/createLocation";
 import { ElMessage } from "element-plus";
 import type { ComponentSize, FormInstance, FormRules } from "element-plus";
 import type { Band } from "~/types/Band";
 import type { Location } from "~/types/Location";
+import { Plus } from "@element-plus/icons-vue";
 
 interface RuleForm {
   name: string;
@@ -150,8 +188,8 @@ interface RuleForm {
   eventtext: string;
   eventstart: number;
   eventend: number;
-  bands: number[];
-  location: number;
+  bands: (number | string)[];
+  location: number | string | null;
   ticket: {
     id: number;
     type: string;
@@ -165,11 +203,11 @@ const route = useRoute();
 const ruleFormRef = ref<FormInstance>();
 const ruleForm = reactive<RuleForm>({
   name: "",
-  type: "Concert",
+  type: "Konzert",
   eventtext: "",
   eventstart: route.query.startDate
     ? new Date(route.query.startDate as string).getTime()
-    : new Date(new Date().setHours(20, 0, 0)).getTime(), // Standardmäßig 20:00 Uhr
+    : new Date(new Date().setHours(20, 0, 0)).getTime(), // Standardmässig 20:00 Uhr
   eventend: 0,
   bands: [],
   location: null,
@@ -188,8 +226,26 @@ const selectedMusicStyles = ref<string[]>([]);
 const bands = ref<Band[]>([]);
 const locations = ref<Location[]>([]);
 
+const isNewBand = ref(false);
+const newBandData = reactive({
+  bandname: "",
+  country: "",
+  description: "",
+});
+
+const isNewLocation = ref(false);
+const newLocationData = reactive({
+  name: "",
+  description: "",
+  street: "",
+  plz: 0,
+  city: "",
+  dogsAllowed: false,
+  email: "",
+});
+
 const eventTypeOptions = [
-  { label: "Konzert", value: "Concert" },
+  { label: "Konzert", value: "Konzert" },
   { label: "Festival", value: "Festival" },
   { label: "Treff", value: "Treff" },
   { label: "Andere", value: "Andere" },
@@ -275,6 +331,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
             ticket: ruleForm.ticket,
           },
         };
+        console.log("Creating event with payload:", payload);
         const response = await createEvent(payload);
         ElMessage({
           showClose: true,
@@ -307,6 +364,97 @@ const handleTicketTypeChange = () => {
     ruleForm.ticket.ticketlink = "";
     ruleForm.ticket.chf = 0;
   }
+};
+
+const handleBandSelectChange = (value: (number | string)[]) => {
+  const newBand = value.find((v) => typeof v === "string");
+  isNewBand.value = !!newBand;
+  newBandData.bandname = isNewBand.value ? (newBand as string) : "";
+};
+
+const saveNewBand = async () => {
+  try {
+    const newBand = await createBand({
+      data: {
+        bandname: newBandData.bandname,
+        country: newBandData.country,
+        description: newBandData.description,
+      },
+    });
+    const bandData = {
+      id: newBand.data.id,
+      attributes: newBand.data.attributes,
+    };
+    bands.value.push(bandData);
+    ruleForm.bands.push(newBand.data.id);
+    isNewBand.value = false;
+    resetNewBandData();
+    ElMessage({
+      showClose: true,
+      message: "Band gespeichert und ausgewählt!",
+      type: "success",
+    });
+  } catch (error) {
+    console.error("Error saving new band:", error);
+    ElMessage({
+      showClose: true,
+      message: "Fehler beim Speichern der neuen Band!",
+      type: "error",
+    });
+  }
+};
+
+const handleLocationSelectChange = (value: number | string) => {
+  const newLocation = typeof value === "string" ? value : "";
+  isNewLocation.value = !!newLocation;
+  newLocationData.name = isNewLocation.value ? (newLocation as string) : "";
+};
+const saveNewLocation = async () => {
+  try {
+    const newLocation = await createLocation({
+      data: {
+        name: newLocationData.name,
+        description: newLocationData.description,
+        Adresse: {
+          street: newLocationData.street,
+          plz: newLocationData.plz,
+          city: newLocationData.city,
+        },
+        dogsAllowed: newLocationData.dogsAllowed,
+        email: newLocationData.email,
+      },
+    });
+    const locationData = {
+      id: newLocation.data.id,
+      attributes: newLocation.data.attributes,
+    };
+    locations.value.push(locationData);
+    ruleForm.location = newLocation.data.id;
+    isNewLocation.value = false;
+    resetNewLocationData();
+    ElMessage({
+      showClose: true,
+      message: "Ort gespeichert und ausgewählt!",
+      type: "success",
+    });
+  } catch (error) {
+    console.error("Error saving new location:", error);
+    ElMessage({
+      showClose: true,
+      message: "Fehler beim Speichern des neuen Ortes!",
+      type: "error",
+    });
+  }
+};
+
+const resetNewLocationData = () => {
+  newLocationData.name = "";
+  newLocationData.description = "";
+  newLocationData.street = "";
+  newLocationData.plz = 0;
+  newLocationData.city = "";
+  newLocationData.dogsAllowed = false;
+  newLocationData.email = "";
 };
 </script>
 

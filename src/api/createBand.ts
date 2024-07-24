@@ -6,22 +6,22 @@ const API_URL = import.meta.env.VITE_API_URL;
 export interface CreateBandPayload {
   data: {
     bandname: string;
-    country: string;
-    musicstyle: {
+    country?: string;
+    musicstyle?: {
       id: number;
       Punk: boolean;
       Metal: boolean;
       Rock: boolean;
       Ska: boolean;
     };
-    description: string;
-    bandphoto: string | number;
-    linklist: {
+    description?: string;
+    bandphoto?: string | number;
+    linklist?: {
       id: number;
       url: string;
       title: string;
     }[];
-    events: (string | number)[];
+    events?: (string | number)[];
   };
 }
 

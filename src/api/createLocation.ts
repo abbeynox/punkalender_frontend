@@ -6,16 +6,16 @@ const API_URL = import.meta.env.VITE_API_URL;
 export interface CreateLocationPayload {
   data: {
     name: string;
-    description: string;
+    description?: string;
     Adresse: {
-      id: number;
-      street: string;
+      id?: number;
+      street?: string;
       city: string;
-      plz: number;
+      plz?: number;
     };
-    dogsAllowed: boolean;
-    email: string;
-    linklist: {
+    dogsAllowed?: boolean;
+    email?: string;
+    linklist?: {
       id: number;
       url: string;
       title: string;
