@@ -1,79 +1,147 @@
 <template>
   <div class="container">
     <div class="left-column">
-      <h1>{{ event?.attributes.name }}</h1>
-      <el-tag>{{ event?.attributes.type }}</el-tag>
-      <p>{{ event?.attributes.eventtext }}</p>
-      <div v-if="event?.attributes.bands" id="band-section">
-        <h3>
-          <el-icon><Mic /></el-icon>
-          Lineup
-        </h3>
-        <div class="demo-collapse">
-          <el-collapse>
-            <el-collapse-item
-              v-for="band in event?.attributes.bands.data"
-              :key="band.id"
-              :title="band.attributes.bandname"
-              :name="band.id.toString()"
-            >
-              <div><strong>Land:</strong> {{ band.attributes.country }}</div>
-              <div v-if="band.attributes.description">
-                <strong>Beschreibung:</strong> {{ band.attributes.description }}
+      <div class="skeleton-container">
+        <el-skeleton :loading="loading" animated>
+          <template #template>
+            <el-skeleton-item variant="h1" style="width: 100%" />
+            <el-skeleton-item variant="text" style="width: 30%" />
+            <el-skeleton-item variant="p" style="width: 80%" />
+          </template>
+          <template #default>
+            <h1>{{ event?.attributes.name }}</h1>
+            <el-tag>{{ event?.attributes.type }}</el-tag>
+            <p>{{ event?.attributes.eventtext }}</p>
+          </template>
+        </el-skeleton>
+      </div>
+      <div class="skeleton-container" v-if="event?.attributes.bands">
+        <el-skeleton :loading="loading" animated>
+          <template #template>
+            <el-skeleton-item variant="h3" style="width: 50%" />
+            <el-skeleton-item
+              variant="text"
+              style="width: 30%"
+              v-for="i in 3"
+              :key="i"
+            />
+          </template>
+          <template #default>
+            <div id="band-section">
+              <h3>
+                <el-icon><Mic /></el-icon>
+                Lineup
+              </h3>
+              <div class="demo-collapse">
+                <el-collapse>
+                  <el-collapse-item
+                    v-for="band in event?.attributes.bands.data"
+                    :key="band.id"
+                    :title="band.attributes.bandname"
+                    :name="band.id.toString()"
+                  >
+                    <div>
+                      <strong>Land:</strong> {{ band.attributes.country }}
+                    </div>
+                    <div v-if="band.attributes.description">
+                      <strong>Beschreibung:</strong>
+                      {{ band.attributes.description }}
+                    </div>
+                    <div v-if="band.attributes.linklist">
+                      <strong>Links:</strong>
+                      <ul>
+                        <li
+                          v-for="link in band.attributes.linklist"
+                          :key="link.id"
+                        >
+                          <a :href="link.url" target="_blank">{{
+                            link.title
+                          }}</a>
+                        </li>
+                      </ul>
+                    </div>
+                  </el-collapse-item>
+                </el-collapse>
               </div>
-              <div v-if="band.attributes.linklist">
-                <strong>Links:</strong>
-                <ul>
-                  <li v-for="link in band.attributes.linklist" :key="link.id">
-                    <a :href="link.url" target="_blank">{{ link.title }}</a>
-                  </li>
-                </ul>
-              </div>
-            </el-collapse-item>
-          </el-collapse>
-        </div>
+            </div>
+          </template>
+        </el-skeleton>
       </div>
     </div>
     <div class="right-column">
-      <h2>{{ formatDateTime(event?.attributes.eventstart) }}</h2>
-      <div class="countdown">
-        <span>{{ days }}</span> Tage &nbsp;&nbsp;&nbsp;
-        <span>{{ hours }}</span> Stunden &nbsp;&nbsp;&nbsp;
-        <span>{{ minutes }}</span> Min &nbsp;&nbsp;&nbsp;
-        <span>{{ seconds }}</span> Sek
+      <div class="skeleton-container">
+        <el-skeleton :loading="loading" animated>
+          <template #template>
+            <el-skeleton-item variant="h2" style="width: 50%" />
+            <el-skeleton-item variant="text" style="width: 50%" />
+            <el-skeleton-item variant="p" style="width: 80%" />
+          </template>
+          <template #default>
+            <h2>{{ formatDateTime(event?.attributes.eventstart) }}</h2>
+            <div class="countdown">
+              <span>{{ days }}</span> Tage &nbsp;&nbsp;&nbsp;
+              <span>{{ hours }}</span> Stunden &nbsp;&nbsp;&nbsp;
+              <span>{{ minutes }}</span> Min &nbsp;&nbsp;&nbsp;
+              <span>{{ seconds }}</span> Sek
+            </div>
+          </template>
+        </el-skeleton>
       </div>
 
-      <h3 class="location">
-        <i inline-flex i="ep-location-information" />
-        {{ event?.attributes.location.data.attributes.name }}
-      </h3>
-      <p>
-        <i inline-flex i="ep-ticket" />
-        <span v-if="event?.attributes.ticket?.type === 'Eintrittspreis'">
-          {{ formatPrice(event?.attributes.ticket?.chf) }} CHF
-          <el-link
-            v-if="event?.attributes.ticket?.ticketlink"
-            :href="event?.attributes.ticket?.ticketlink"
-            target="_blank"
-            style="margin-left: 5px;"
-            ><i inline-flex i="ep-shopping-trolley" style="margin-right:2px;"/> kaufen</el-link
-          >
-        </span>
-        <span v-else>
-          {{ event?.attributes.ticket?.type }}
-        </span>
-      </p>
+      <div class="skeleton-container">
+        <el-skeleton :loading="loading" animated>
+          <template #template>
+            <el-skeleton-item variant="h3" style="width: 50%" />
+            <el-skeleton-item variant="p" style="width: 70%" />
+            <el-skeleton-item variant="text" style="width: 60%" />
+          </template>
+          <template #default>
+            <h3 class="location">
+              <i inline-flex i="ep-location-information" />
+              {{ event?.attributes.location.data.attributes.name }}
+            </h3>
+            <p>
+              <i inline-flex i="ep-ticket" />
+              <span v-if="event?.attributes.ticket?.type === 'Eintrittspreis'">
+                {{ formatPrice(event?.attributes.ticket?.chf) }} CHF
+                <el-link
+                  v-if="event?.attributes.ticket?.ticketlink"
+                  :href="event?.attributes.ticket?.ticketlink"
+                  target="_blank"
+                  style="margin-left: 5px"
+                  ><i
+                    inline-flex
+                    i="ep-shopping-trolley"
+                    style="margin-right: 2px"
+                  />
+                  kaufen</el-link
+                >
+              </span>
+              <span v-else>
+                {{ event?.attributes.ticket?.type }}
+              </span>
+            </p>
+          </template>
+        </el-skeleton>
+      </div>
 
-      <div class="share">
-        <el-button plain @click="downloadICS">
-          <el-icon><Calendar /></el-icon>
-          <span class="button-text"> Kalender eintragen</span>
-        </el-button>
-
-        <el-button plain @click="copyLink">
-          <el-icon><CopyDocument /></el-icon>
-          <span class="button-text"> Link kopieren</span>
-        </el-button>
+      <div class="share skeleton-container">
+        <el-skeleton :loading="loading" animated>
+          <template #template>
+            <el-skeleton-item variant="button" style="width: 100%" />
+            <el-skeleton-item variant="button" style="width: 100%" />
+          </template>
+          <template #default>
+            <el-button plain @click="downloadICS">
+              <el-icon><Calendar /></el-icon>
+              <span class="button-text"> Kalender eintragen</span>
+            </el-button>
+            <el-button plain @click="copyLink">
+              <el-icon><CopyDocument /></el-icon>
+              <span class="button-text"> Link kopieren</span>
+            </el-button>
+          </template>
+        </el-skeleton>
       </div>
     </div>
   </div>
@@ -89,6 +157,7 @@ import { ElMessage } from "element-plus";
 
 const route = useRoute();
 const event = ref<Event | null>(null);
+const loading = ref(true);
 
 const days = ref(0);
 const hours = ref(0);
@@ -99,10 +168,12 @@ const loadEvent = async (id: number) => {
   try {
     const response = await fetchEvent(id);
     event.value = response.data;
+    loading.value = false;
     document.title = response.data.attributes.name;
     startCountdown(new Date(response.data.attributes.eventstart));
   } catch (error) {
     console.error("Error loading event:", error);
+    loading.value = false;
   }
 };
 
@@ -211,6 +282,10 @@ watch(event, (newEvent) => {
   flex: 1;
   max-width: 48%;
   text-align: left;
+}
+
+.skeleton-container {
+  margin-top: 20px;
 }
 
 .countdown span {

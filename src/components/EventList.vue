@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1>Nächste Events</h1>
-    <p>{{ displayedEvents.length }} Events gefunden</p>
+    <p v-if="!loading">{{ displayedEvents.length }} Events gefunden</p>
     <el-row>
       <el-col class="grid-content mt-5 mb-5" :span="24">
         <div class="filter-container">
@@ -28,24 +28,36 @@
       infinite-scroll-distance="10"
     >
       <el-row :gutter="20">
-        <el-col
-          v-for="event in displayedEvents"
-          :key="event.id"
-          :xs="24"
-          :sm="12"
-          :md="8"
-        >
-          <el-card class="event-card" :body-style="{ padding: '20px' }">
-            <h3>{{ event.attributes.name }}</h3>
+        <el-col v-for="n in 9" :key="n" :xs="24" :sm="12" :md="8">
+          <el-skeleton
+            :loading="loading"
+            animated
+            v-if="!displayedEvents[n - 1]"
+          >
+            <template #template>
+              <el-card class="event-card" :body-style="{ padding: '20px' }">
+                <el-skeleton-item variant="h3" style="width: 80%" />
+                <el-skeleton-item variant="p" style="width: 50%" />
+                <el-skeleton-item variant="p" style="width: 50%" />
+                <el-skeleton-item variant="button" style="width: 30%" />
+              </el-card>
+            </template>
+          </el-skeleton>
+          <el-card v-else class="event-card" :body-style="{ padding: '20px' }">
+            <h3>{{ displayedEvents[n - 1]?.attributes.name }}</h3>
             <p>
               <el-icon><Calendar /></el-icon>
-              {{ formatEventDate(event.attributes.eventstart) }}
+              {{
+                formatEventDate(displayedEvents[n - 1]?.attributes.eventstart)
+              }}
             </p>
             <p>
               <el-icon><Location /></el-icon>
-              {{ event.attributes.location.data.attributes.name }}
+              {{
+                displayedEvents[n - 1]?.attributes.location.data.attributes.name
+              }}
             </p>
-            <router-link :to="'/event/' + event.id">
+            <router-link :to="'/event/' + displayedEvents[n - 1]?.id">
               <el-button plain>Details</el-button>
             </router-link>
           </el-card>
