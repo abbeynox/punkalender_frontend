@@ -66,6 +66,7 @@
           placeholder="Wähle Bands aus"
           style="width: 100%"
           @change="handleBandSelectChange"
+          :filter-method="filterBands"
         >
           <el-option
             v-for="band in bands"
@@ -75,6 +76,7 @@
           />
         </el-select>
       </el-form-item>
+
       <el-form-item v-if="isNewBand" label="Neue Band">
         <el-input
           v-model="newBandData.bandname"
@@ -391,6 +393,11 @@ const resetForm = (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   formEl.resetFields();
   selectedMusicStyles.value = [];
+  newBandData.bandname = "";
+  newBandData.country = "";
+  newBandData.description = "";
+  isNewBand.value = false;
+  resetNewLocationData();
 };
 
 const handleTicketTypeChange = () => {
@@ -406,8 +413,29 @@ const handleBandSelectChange = (value: (number | string)[]) => {
   newBandData.bandname = isNewBand.value ? (newBand as string) : "";
 };
 
+// Überprüfen, ob der Bandname bereits existiert
+const filterBands = (query: string) => {
+  if (query !== '') {
+    bands.value = bands.value.filter(band => band.attributes.bandname.toLowerCase().includes(query.toLowerCase()));
+  } else {
+    loadBandsAndLocations();
+  }
+};
+
 const saveNewBand = async () => {
   try {
+    const existingBand = bands.value.find(
+      (band) => band.attributes.bandname.toLowerCase() === newBandData.bandname.toLowerCase()
+    );
+    if (existingBand) {
+      ElMessage({
+        showClose: true,
+        message: "Diese Band existiert bereits!",
+        type: "warning",
+      });
+      return;
+    }
+
     const newBand = await createBand({
       data: {
         bandname: newBandData.bandname,
@@ -415,13 +443,23 @@ const saveNewBand = async () => {
         description: newBandData.description,
       },
     });
+
     const bandData = {
       id: newBand.data.id,
       attributes: newBand.data.attributes,
     };
     bands.value.push(bandData);
+    ruleForm.bands = ruleForm.bands.filter(
+      (band) => typeof band === 'number'
+    ); // Entferne den String-Eintrag
     ruleForm.bands.push(newBand.data.id);
+
+    // Felder für die neue Band zurücksetzen
+    newBandData.bandname = "";
+    newBandData.country = "";
+    newBandData.description = "";
     isNewBand.value = false;
+
     ElMessage({
       showClose: true,
       message: "Band gespeichert und ausgewählt!",
