@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1>Nächste Events</h1>
-    <p v-if="!loading">{{ displayedEvents.length }} Events gefunden</p>
+    <p>{{ displayedEvents.length }} Events gefunden</p>
     <el-row>
       <el-col class="grid-content mt-5 mb-5" :span="24">
         <div class="filter-container">
@@ -22,54 +22,39 @@
         </div>
       </el-col>
     </el-row>
-    <div
-      v-infinite-scroll="loadMoreEvents"
-      infinite-scroll-disabled="loading"
-      infinite-scroll-distance="10"
-    >
-      <el-row :gutter="20">
-        <el-col v-for="n in 9" :key="n" :xs="24" :sm="12" :md="8">
-          <el-skeleton
-            :loading="loading"
-            animated
-            v-if="!displayedEvents[n - 1]"
-          >
-            <template #template>
-              <el-card class="event-card" :body-style="{ padding: '20px' }">
-                <el-skeleton-item variant="h3" style="width: 80%" />
-                <el-skeleton-item variant="p" style="width: 50%" />
-                <el-skeleton-item variant="p" style="width: 50%" />
-                <el-skeleton-item variant="button" style="width: 30%" />
-              </el-card>
-            </template>
-          </el-skeleton>
-          <el-card v-else class="event-card" :body-style="{ padding: '20px' }">
-            <h3>{{ displayedEvents[n - 1]?.attributes.name }}</h3>
-            <p>
-              <el-icon><Calendar /></el-icon>
-              {{
-                formatEventDate(displayedEvents[n - 1]?.attributes.eventstart)
-              }}
-            </p>
-            <p>
-              <el-icon><Location /></el-icon>
-              {{
-                displayedEvents[n - 1]?.attributes.location.data.attributes.name
-              }}
-            </p>
-            <router-link :to="'/event/' + displayedEvents[n - 1]?.id">
-              <el-button plain>Details</el-button>
-            </router-link>
-          </el-card>
-        </el-col>
-      </el-row>
-    </div>
+    <el-row :gutter="20">
+      <el-col
+        v-for="event in displayedEvents"
+        :key="event.id"
+        :xs="24"
+        :sm="12"
+        :md="8"
+      >
+        <el-card class="event-card" :body-style="{ padding: '20px' }">
+          <h3>{{ event.attributes.name }}</h3>
+          <p>
+            <el-icon><Calendar /></el-icon>
+            {{ formatEventDate(event.attributes.eventstart) }}
+          </p>
+          <p>
+            <el-icon><Location /></el-icon>
+            {{ event.attributes.location.data.attributes.name }}
+          </p>
+          <router-link :to="'/event/' + event.id">
+            <el-button plain>Details</el-button>
+          </router-link>
+        </el-card>
+      </el-col>
+    </el-row>
+    <el-button v-if="hasMoreEvents" @click="loadMoreEvents" :loading="loading">
+      Mehr anzeigen
+    </el-button>
     <div v-if="error">{{ error }}</div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted } from "vue";
+import { defineComponent, ref, onMounted, computed } from "vue";
 import { fetchEvents } from "../api/events";
 import { Event } from "../types/Event";
 import SearchBar from "@/components/SearchBar.vue";
@@ -84,9 +69,11 @@ export default defineComponent({
     const displayedEvents = ref<Event[]>([]);
     const error = ref<string | null>(null);
     const page = ref(1);
-    const pageSize = ref(9); // 3 rows per load
+    const pageSize = ref(9); // Start mit 9 Events
     const loading = ref(false);
     const selectedDate = ref<Date | null>(null);
+    const searchTerm = ref<string>("");
+    const totalEvents = ref<number>(0);
 
     const dateShortcuts = [
       {
@@ -112,23 +99,21 @@ export default defineComponent({
       loading.value = true;
       try {
         const response = await fetchEvents(
-          undefined,
+          "eventstart:asc", // Sortierung nach eventstart
           page.value,
           pageSize.value
         );
-        const currentDate = new Date();
-        const sortedEvents = response.data
-          .filter(
-            (event: Event) =>
-              new Date(event.attributes.eventstart) >= currentDate
-          )
-          .sort(
-            (a: Event, b: Event) =>
-              new Date(a.attributes.eventstart).getTime() -
-              new Date(b.attributes.eventstart).getTime()
-          );
-        events.value.push(...sortedEvents);
-        displayedEvents.value = events.value;
+        totalEvents.value = response.meta.pagination.total;
+
+        // Filtere Events aus der Vergangenheit heraus
+        const futureEvents = response.data.filter((event) => {
+          const eventDate = new Date(event.attributes.eventstart);
+          const today = new Date();
+          return eventDate >= today;
+        });
+
+        events.value.push(...futureEvents);
+        filterEvents();
         page.value += 1;
       } catch (err) {
         error.value = (err as Error).message;
@@ -137,24 +122,25 @@ export default defineComponent({
       }
     };
 
-    const handleSearch = (searchTerm: string) => {
-      filterEvents(searchTerm, selectedDate.value);
+    const handleSearch = (term: string) => {
+      searchTerm.value = term;
+      filterEvents();
     };
 
     const handleDateChange = (date: Date | null) => {
       selectedDate.value = date;
-      filterEvents("", date);
+      filterEvents();
     };
 
-    const filterEvents = (searchTerm: string, date: Date | null) => {
+    const filterEvents = () => {
       displayedEvents.value = events.value.filter((event) => {
         const matchesSearch = event.attributes.name
           .toLowerCase()
-          .includes(searchTerm.toLowerCase());
+          .includes(searchTerm.value.toLowerCase());
         const matchesDate =
-          !date ||
+          !selectedDate.value ||
           new Date(event.attributes.eventstart).toLocaleDateString() ===
-            date.toLocaleDateString();
+            selectedDate.value.toLocaleDateString();
         return matchesSearch && matchesDate;
       });
     };
@@ -185,6 +171,9 @@ export default defineComponent({
       handleSearch,
       handleDateChange,
       loading,
+      hasMoreEvents: computed(
+        () => displayedEvents.value.length < totalEvents.value
+      ),
       selectedDate,
       dateShortcuts,
       formatEventDate,
