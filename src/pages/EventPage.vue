@@ -110,7 +110,6 @@
                   name="address"
                 >
                   <div>
-                    <strong>Vollständige Adresse:</strong> <br />
                     {{
                       event?.attributes.location.data.attributes.Adresse.street
                     }}
