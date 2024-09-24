@@ -99,7 +99,7 @@
               <i inline-flex i="ep-location-information" />
               {{ event?.attributes.location.data.attributes.name }}
             </h3>
-            <div class="demo-collapse">
+            <div>
               <el-collapse>
                 <el-collapse-item
                   :title="
@@ -120,7 +120,6 @@
                     {{
                       event?.attributes.location.data.attributes.Adresse.plz
                     }}
-                
                   </div>
                 </el-collapse-item>
               </el-collapse>
