@@ -16,7 +16,7 @@
         <el-input
           v-model="ruleForm.name"
           show-word-limit
-          maxlength="40"
+          maxlength="100"
           style="width: 100%"
         />
       </el-form-item>

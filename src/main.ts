@@ -6,6 +6,8 @@ import "~/styles/index.scss";
 import "uno.css";
 import "element-plus/theme-chalk/src/message.scss";
 import { createPinia } from "pinia";
+import 'leaflet/dist/leaflet.css';
+
 
 const app = createApp(App);
 const pinia = createPinia();

@@ -44,7 +44,6 @@
                       <strong>Land:</strong> {{ band.attributes.country }}
                     </div>
                     <div v-if="band.attributes.description">
-                      <strong>Beschreibung:</strong>
                       {{ band.attributes.description }}
                     </div>
                     <div v-if="band.attributes.linklist">
@@ -100,6 +99,34 @@
               <i inline-flex i="ep-location-information" />
               {{ event?.attributes.location.data.attributes.name }}
             </h3>
+            <div class="demo-collapse">
+              <el-collapse>
+                <el-collapse-item
+                  :title="
+                    event?.attributes.location.data.attributes.Adresse.city +
+                    ', ' +
+                    event?.attributes.location.data.attributes.Adresse.street
+                  "
+                  name="address"
+                >
+                  <div>
+                    <strong>Vollständige Adresse:</strong> <br />
+                    {{
+                      event?.attributes.location.data.attributes.Adresse.street
+                    }}
+                    <br />
+                    {{
+                      event?.attributes.location.data.attributes.Adresse.city
+                    }}
+                    {{
+                      event?.attributes.location.data.attributes.Adresse.plz
+                    }}
+                
+                  </div>
+                </el-collapse-item>
+              </el-collapse>
+            </div>
+
             <p>
               <i inline-flex i="ep-ticket" />
               <span v-if="event?.attributes.ticket?.type === 'Eintrittspreis'">
@@ -166,7 +193,7 @@ const seconds = ref(0);
 
 const loadEvent = async (id: number) => {
   try {
-    const response = await fetchEvent(id);
+    const response = await fetchEvent(id, 'location.Adresse,ticket, bands');
     event.value = response.data;
     loading.value = false;
     document.title = response.data.attributes.name;

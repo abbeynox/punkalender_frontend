@@ -61,9 +61,16 @@ export const fetchEvents = async (
   }
 };
 
-export const fetchEvent = async (id: number): Promise<EventResponse> => {
+export const fetchEvent = async (
+  id: number,
+  populate: string = "*"
+): Promise<EventResponse> => {
+  const params: Record<string, any> = {};
+  if (populate) params.populate = populate;
+
   try {
-    const response = await axios.get<EventResponse>(`${API_URL}/events/${id}?populate=*`, {
+    const response = await axios.get<EventResponse>(`${API_URL}/events/${id}`, {
+      params,
       headers: {
         Authorization: `Bearer ${API_KEY}`,
       },
