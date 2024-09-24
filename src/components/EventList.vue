@@ -9,36 +9,28 @@
             <SearchBar @search="handleSearch" />
           </el-col>
           <el-col :span="8">
-            <el-date-picker
-              v-model="selectedDate"
-              type="date"
-              placeholder="Wähle ein Datum"
-              :shortcuts="dateShortcuts"
-              @change="handleDateChange"
-              size="large"
-              style="width: 100%"
-            />
+            <el-date-picker v-model="selectedDate" type="date" placeholder="Wähle ein Datum" :shortcuts="dateShortcuts"
+              @change="handleDateChange" size="large" style="width: 100%" />
           </el-col>
         </div>
       </el-col>
     </el-row>
     <el-row :gutter="20">
-      <el-col
-        v-for="event in displayedEvents"
-        :key="event.id"
-        :xs="24"
-        :sm="12"
-        :md="8"
-      >
+      <el-col v-for="event in displayedEvents" :key="event.id" :xs="24" :sm="12" :md="8">
         <el-card class="event-card" :body-style="{ padding: '20px' }">
           <h3>{{ event.attributes.name }}</h3>
           <p>
-            <el-icon><Calendar /></el-icon>
+            <el-icon>
+              <Calendar />
+            </el-icon>
             {{ formatEventDate(event.attributes.eventstart) }}
           </p>
           <p>
-            <el-icon><Location /></el-icon>
-            {{ event.attributes.location.data.attributes.name }}
+            <el-icon>
+              <Location />
+            </el-icon>
+            {{ event.attributes.location.data.attributes.name }}, {{
+              event.attributes.location.data.attributes.Adresse.city }}
           </p>
           <router-link :to="'/event/' + event.id">
             <el-button plain>Details</el-button>
@@ -46,15 +38,12 @@
         </el-card>
       </el-col>
     </el-row>
-    <el-button v-if="hasMoreEvents" @click="loadMoreEvents" :loading="loading">
-      Mehr anzeigen
-    </el-button>
     <div v-if="error">{{ error }}</div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, computed } from "vue";
+import { defineComponent, ref, onMounted } from "vue";
 import { fetchEvents } from "../api/events";
 import { Event } from "../types/Event";
 import SearchBar from "@/components/SearchBar.vue";
@@ -68,12 +57,9 @@ export default defineComponent({
     const events = ref<Event[]>([]);
     const displayedEvents = ref<Event[]>([]);
     const error = ref<string | null>(null);
-    const page = ref(1);
-    const pageSize = ref(9); // Start mit 9 Events
     const loading = ref(false);
     const selectedDate = ref<Date | null>(null);
     const searchTerm = ref<string>("");
-    const totalEvents = ref<number>(0);
 
     const dateShortcuts = [
       {
@@ -91,30 +77,27 @@ export default defineComponent({
     ];
 
     onMounted(async () => {
-      await loadMoreEvents();
+      await loadEvents();
     });
 
-    const loadMoreEvents = async () => {
-      if (loading.value) return;
+    const loadEvents = async () => {
       loading.value = true;
       try {
         const response = await fetchEvents(
-          "eventstart:asc", // Sortierung nach eventstart
-          page.value,
-          pageSize.value
+          "eventstart:asc",
+          1,
+          25,
+          undefined,
+          { location: { populate: ['Adresse'] } }
         );
-        totalEvents.value = response.meta.pagination.total;
-
-        // Filtere Events aus der Vergangenheit heraus
         const futureEvents = response.data.filter((event) => {
           const eventDate = new Date(event.attributes.eventstart);
           const today = new Date();
           return eventDate >= today;
         });
 
-        events.value.push(...futureEvents);
+        events.value = futureEvents;
         filterEvents();
-        page.value += 1;
       } catch (err) {
         error.value = (err as Error).message;
       } finally {
@@ -140,7 +123,7 @@ export default defineComponent({
         const matchesDate =
           !selectedDate.value ||
           new Date(event.attributes.eventstart).toLocaleDateString() ===
-            selectedDate.value.toLocaleDateString();
+          selectedDate.value.toLocaleDateString();
         return matchesSearch && matchesDate;
       });
     };
@@ -167,13 +150,9 @@ export default defineComponent({
     return {
       displayedEvents,
       error,
-      loadMoreEvents,
       handleSearch,
       handleDateChange,
       loading,
-      hasMoreEvents: computed(
-        () => displayedEvents.value.length < totalEvents.value
-      ),
       selectedDate,
       dateShortcuts,
       formatEventDate,
@@ -181,6 +160,7 @@ export default defineComponent({
   },
 });
 </script>
+
 
 <style scoped>
 .event-card {
@@ -193,7 +173,7 @@ export default defineComponent({
   gap: 10px;
 }
 
-.filter-container > * {
+.filter-container>* {
   flex: 1;
 }
 
