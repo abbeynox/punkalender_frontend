@@ -114,11 +114,9 @@
                       event?.attributes.location.data.attributes.Adresse.street
                     }}
                     <br />
+                    {{ event?.attributes.location.data.attributes.Adresse.plz }}
                     {{
                       event?.attributes.location.data.attributes.Adresse.city
-                    }}
-                    {{
-                      event?.attributes.location.data.attributes.Adresse.plz
                     }}
                   </div>
                 </el-collapse-item>
@@ -191,7 +189,7 @@ const seconds = ref(0);
 
 const loadEvent = async (id: number) => {
   try {
-    const response = await fetchEvent(id, 'location.Adresse,ticket, bands');
+    const response = await fetchEvent(id, "location.Adresse,ticket, bands");
     event.value = response.data;
     loading.value = false;
     document.title = response.data.attributes.name;
