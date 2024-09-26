@@ -104,7 +104,7 @@
                 <el-collapse-item
                   :title="
                     event?.attributes.location.data.attributes.Adresse.city +
-                    ', ' +
+                    ' ' +
                     event?.attributes.location.data.attributes.Adresse.street
                   "
                   name="address"
