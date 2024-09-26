@@ -20,7 +20,7 @@
           ref="bandname"
         />
       </el-form-item>
-      <el-form-item label="Land" prop="country">
+      <el-form-item label="herkunft" prop="country">
         <el-input v-model="bandForm.country" ref="country" />
       </el-form-item>
       <el-form-item label="Beschreibung" prop="description">

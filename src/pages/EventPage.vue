@@ -11,7 +11,7 @@
           <template #default>
             <h1>{{ event?.attributes.name }}</h1>
             <el-tag>{{ event?.attributes.type }}</el-tag>
-            <p>{{ event?.attributes.eventtext }}</p>
+            <p v-html="renderMarkdown(event?.attributes.eventtext)"></p>
           </template>
         </el-skeleton>
       </div>
@@ -41,7 +41,7 @@
                     :name="band.id.toString()"
                   >
                     <div>
-                      <strong>Land:</strong> {{ band.attributes.country }}
+                      <strong>Herkunft:</strong> {{ band.attributes.country }}
                     </div>
                     <div v-if="band.attributes.description">
                       {{ band.attributes.description }}
@@ -177,6 +177,7 @@ import { fetchEvent } from "../api/events";
 import type { Event } from "../types/Event";
 import { Mic, CopyDocument, Calendar } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
+import { marked } from "marked";  // Importiere den Markdown-Parser
 
 const route = useRoute();
 const event = ref<Event | null>(null);
@@ -275,6 +276,11 @@ const copyLink = async () => {
   }
 };
 
+// Eine Funktion, um den Event-Text als HTML mit Markdown-Unterstützung zu rendern
+const renderMarkdown = (text: string) => {
+  return marked(text);
+};
+
 onMounted(() => {
   const id = Number(route.params.id);
   loadEvent(id);
@@ -286,6 +292,7 @@ watch(event, (newEvent) => {
   }
 });
 </script>
+
 
 <style scoped>
 .container {
