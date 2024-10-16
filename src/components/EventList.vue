@@ -15,28 +15,46 @@
         </div>
       </el-col>
     </el-row>
+
+    <!-- Grid mit Skeletons oder Events -->
     <el-row :gutter="20">
-      <el-col v-for="event in displayedEvents" :key="event.id" :xs="24" :sm="12" :md="8">
-        <el-card class="event-card" :body-style="{ padding: '20px' }">
-          <h3>{{ event.attributes.name }}</h3>
-          <p>
-            <el-icon>
-              <Calendar />
-            </el-icon>
-            {{ formatEventDate(event.attributes.eventstart) }}
-          </p>
-          <p>
-            <el-icon>
-              <Location />
-            </el-icon>
-            {{ event.attributes.location.data.attributes.name }}, {{
-              event.attributes.location.data.attributes.Adresse.city }}
-          </p>
-          <router-link :to="'/event/' + event.id">
-            <el-button plain>Details</el-button>
-          </router-link>
-        </el-card>
-      </el-col>
+      <template v-if="loading">
+        <el-col v-for="n in 9" :key="n" :xs="24" :sm="12" :md="8">
+          <el-card class="event-card" :body-style="{ padding: '20px' }">
+            <el-skeleton :loading="true" animated>
+              <template #template>
+                <el-skeleton-item variant="h3" style="width: 60%" />
+                <el-skeleton-item variant="text" style="width: 100%" />
+                <el-skeleton-item variant="text" style="width: 70%" />
+                <el-skeleton-item variant="button" style="width: 40%" />
+              </template>
+            </el-skeleton>
+          </el-card>
+        </el-col>
+      </template>
+      <template v-else>
+        <el-col v-for="event in displayedEvents" :key="event.id" :xs="24" :sm="12" :md="8">
+          <el-card class="event-card" :body-style="{ padding: '20px' }">
+            <h3>{{ event.attributes.name }}</h3>
+            <p>
+              <el-icon>
+                <Calendar />
+              </el-icon>
+              {{ formatEventDate(event.attributes.eventstart) }}
+            </p>
+            <p>
+              <el-icon>
+                <Location />
+              </el-icon>
+              {{ event.attributes.location.data.attributes.name }},
+              {{ event.attributes.location.data.attributes.Adresse.city }}
+            </p>
+            <router-link :to="'/event/' + event.id">
+              <el-button plain>Details</el-button>
+            </router-link>
+          </el-card>
+        </el-col>
+      </template>
     </el-row>
     <div v-if="error">{{ error }}</div>
   </div>
@@ -57,7 +75,7 @@ export default defineComponent({
     const events = ref<Event[]>([]);
     const displayedEvents = ref<Event[]>([]);
     const error = ref<string | null>(null);
-    const loading = ref(false);
+    const loading = ref(false); // Loading Status
     const selectedDate = ref<Date | null>(null);
     const searchTerm = ref<string>("");
 
@@ -83,13 +101,9 @@ export default defineComponent({
     const loadEvents = async () => {
       loading.value = true;
       try {
-        const response = await fetchEvents(
-          "eventstart:asc",
-          1,
-          25,
-          undefined,
-          { location: { populate: ['Adresse'] } }
-        );
+        const response = await fetchEvents("eventstart:asc", 1, 100, undefined, {
+          location: { populate: ["Adresse"] },
+        });
         const futureEvents = response.data.filter((event) => {
           const eventDate = new Date(event.attributes.eventstart);
           const today = new Date();
@@ -116,16 +130,19 @@ export default defineComponent({
     };
 
     const filterEvents = () => {
-      displayedEvents.value = events.value.filter((event) => {
-        const matchesSearch = event.attributes.name
-          .toLowerCase()
-          .includes(searchTerm.value.toLowerCase());
-        const matchesDate =
-          !selectedDate.value ||
-          new Date(event.attributes.eventstart).toLocaleDateString() ===
-          selectedDate.value.toLocaleDateString();
-        return matchesSearch && matchesDate;
-      });
+      displayedEvents.value =
+        searchTerm.value || selectedDate.value
+          ? events.value.filter((event) => {
+            const matchesSearch = event.attributes.name
+              .toLowerCase()
+              .includes(searchTerm.value.toLowerCase());
+            const matchesDate =
+              !selectedDate.value ||
+              new Date(event.attributes.eventstart).toLocaleDateString() ===
+              selectedDate.value.toLocaleDateString();
+            return matchesSearch && matchesDate;
+          })
+          : events.value;
     };
 
     const formatEventDate = (dateString: any) => {
@@ -160,6 +177,7 @@ export default defineComponent({
   },
 });
 </script>
+
 
 
 <style scoped>
