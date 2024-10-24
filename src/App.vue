@@ -1,7 +1,11 @@
+<script setup lang="ts">
+import BaseFooter from './components/layouts/BaseFooter.vue';
+</script>
+
 <template>
   <el-config-provider namespace="ep">
     <BaseHeader />
-    <div class="flex main-container">
+    <div class="main-container">
       <router-view />
     </div>
     <BaseFooter />
@@ -10,19 +14,24 @@
 
 <style>
 #app {
-  text-align: center;
-  color: var(--ep-text-color-primary);
+  position: relative;
+  min-height: 100vh;
+  padding-bottom: 100px;
 }
 
 .main-container {
-  height: calc(100vh - var(--ep-menu-item-height) - 3px);
   margin-left: auto;
   margin-right: auto;
   padding-left: 24px;
   padding-right: 24px;
-  max-width: 1200px; /* Set the maximum width here */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  max-width: 1200px;
+}
+
+footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 100px;
+  text-align: center;
 }
 </style>
